@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
+import ReportScreen from './screens/ReportScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -66,7 +67,7 @@ function Tabs() {
           />
           <Tab.Screen 
           name="Report" 
-          component={HomeScreen} 
+          component={ReportScreen} 
            options={{
             tabBarIcon: ({focused})=>{
               return (
