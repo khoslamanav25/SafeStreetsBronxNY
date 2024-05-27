@@ -15,7 +15,7 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import ReportScreen from './screens/ReportScreen';
-import HeatMapScreen from './screens/HeatMapScreen'
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -35,7 +35,7 @@ const screenOptions = {
 }
 
 
-function Tabs() {
+function Tabs( ) {
   return (
     <Tab.Navigator screenOptions={screenOptions}>
           <Tab.Screen 
