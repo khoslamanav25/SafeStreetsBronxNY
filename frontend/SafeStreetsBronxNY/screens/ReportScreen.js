@@ -9,6 +9,7 @@ import {
 } from "react-native-popup-menu";
 import { FIREBASE_AUTH } from "../FirebaseConfig";
 import { Icon } from "react-native-elements";
+import * as ImagePicker from 'expo-image-picker';
 
 
 const ReportScreen = ({ navigation }) => {
@@ -17,33 +18,34 @@ const ReportScreen = ({ navigation }) => {
 
   const selectImage = async () => {
 
-    console.log("SDFSDF ")
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-    if (!result.cancelled) {
-      setImage(result.uri);
-    }
+    console.log(result)
+    console.log(result.assets[0].uri)
+    if (!result.canceled) {
+        setImage(result.assets[0].uri);
+      }
+
+
   };
 
 
   return (
     <View style={styles.safeArea}>
+
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => {}}>
-            <Icon
-              name="dots-three-vertical"
-              type="entypo"
-              size={20}
-              color="black"
-            />
-          </TouchableOpacity>
-        </View>
+
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Report the Incident</Text>
+      </View>
+
+      <View style={styles.separator} />
+
         <View style={styles.content}>
           <View style={styles.inputContainer}>
             <Text style={styles.inputHeader}>Location / Address</Text>
@@ -65,8 +67,13 @@ const ReportScreen = ({ navigation }) => {
           </View>
           <TouchableOpacity style={styles.uploadButton} onPress={selectImage}>
             <Text style={styles.uploadButtonText}>Upload Photo</Text>
+         
           </TouchableOpacity>
-          {image && <Image source={{ uri: image }} style={styles.uploadedImage} />}
+
+          <View style={styles.imageContainer}>
+            {image && <Image source={{ uri: image }} style={styles.image} />}
+          </View>
+        
         </View>
       </View>
     </View>
@@ -84,10 +91,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    paddingTop: 30,
+    padding: 16,
     alignItems: "center",
-    marginBottom: 20,
+    backgroundColor: "#fff",
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#16247d",
   },
   content: {
     flex: 1,
@@ -122,11 +134,23 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   image: {
-    borderRadius: 75,
-    width: 150,
-    height: 150,
-    borderWidth: 5,
-  }
+    borderRadius: 3,
+    height: 250,
+    width: 250,
+    borderWidth: 3,
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingBottom: 100
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#ccc", // Light grey color for the separator
+    width: "100%",
+    marginBottom: 20,
+  },
 });
 
 export default ReportScreen;
