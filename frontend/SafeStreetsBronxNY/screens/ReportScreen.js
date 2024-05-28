@@ -2,22 +2,23 @@ import React, {useState} from "react";
 import { StyleSheet, View, Image, TouchableOpacity, Text, TextInput, ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 
-import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
-import { doc, setDoc } from "firebase/firestore"; 
+import { FIREBASE_AUTH, FIREBASE_STORAGE, FIRESTORE_DB } from "../FirebaseConfig";
+import { doc, setDoc, onSnapshot } from "firebase/firestore"; 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
+import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage'
 
 
 import defaultImage from '../assets/placeholder.png'; // Adjust the path to your default image
 
 
 
-
-
 const ReportScreen = ({ navigation }) => {
   
   const db = FIRESTORE_DB;
+  const storage = FIREBASE_STORAGE
+
   const [image, setImage] = useState(null);
   const [location, setLocation] = useState(null);
   const [description, setDescription] = useState(null);
@@ -31,7 +32,7 @@ const ReportScreen = ({ navigation }) => {
         quality: 1,
       });
 
-    console.log(result)
+  
     console.log(result.assets[0].uri)
     if (!result.canceled) {
         setImage(result.assets[0].uri);
@@ -40,18 +41,49 @@ const ReportScreen = ({ navigation }) => {
 
   const uploadReport = async () => {
 
-    console.log("SDFSDF")
-    const report = {
-        image: image,
-        location: location,
-        description: description,
-        user: FIREBASE_AUTH.currentUser.uid,
-        time: new Date()
-    }
+    //CONVERTING IMAGE TO BLOB FOR FIREBASE STORAGE
+    const image_response = await fetch(image);
+    const image_blob = await image_response.blob();
 
     try {
+
+        //WRITING IMAGE TO FIREBASE STORAGE (NOT FIRESTORE) WITH IDENTIFIER
+
+        const firebasefileLocation = "reportImages/" + FIREBASE_AUTH.currentUser.uid + "/" + new Date()
+        console.log(firebasefileLocation)
+        const storageRef = ref(storage, firebasefileLocation);
+
+        const uploadTask = uploadBytesResumable(storageRef, image_blob);
+
+        uploadTask.on("state_changed", (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes)
+            //console.log("Progress of image upload: " + progress * 100 + "%")
+        }, 
+        (error) => {
+            console.log(error)
+        }, //On Error
+        () => {
+            getDownloadURL(uploadTask.snapshot.ref).then(async(getDownloadURL) => {
+              setImage("")
+              setLocation("")
+              setDescription("")
+              navigation.navigate('Map')
+            })
+        } //On Completion
+        )  
+
+        //WRITING TO FIRESTORE
+        const report = {
+            image: firebasefileLocation,
+            location: location,
+            description: description,
+            user: FIREBASE_AUTH.currentUser.uid,
+            time: new Date()
+        }
+
         res = await setDoc(doc(db, "reports", Date()), report);
         console.log("Succesfully Wrote Report To Firebase")
+      
 
       } catch (error) {
         console.error('Error writing document:', error);
