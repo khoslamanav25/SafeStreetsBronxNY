@@ -8,7 +8,7 @@ import MapView, { Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
 import Papa from 'papaparse';
 import { Picker } from '@react-native-picker/picker'
 
-import { doc, getDoc, onSnapshot} from 'firebase/firestore'
+import { doc, getDoc, onSnapshot, collection, query, getDocs} from 'firebase/firestore'
 
 const HomeScreen = ({ navigation }) => {
   const [crimeWtd, setCrimeWtd] = useState([]);
@@ -66,8 +66,11 @@ const HomeScreen = ({ navigation }) => {
 
   const fetchCurrentData = async () => {
     try{
-        const initialData = await db.collection("reports").get()
-        console.log(initialData)
+      const querySnapshot = await getDocs(collection(db, "reports"));
+      querySnapshot.forEach((doc) => {
+        setMarkerCoords(markerCoords.push([doc.data().latlng.latitude, doc.data().latlng.longitude]))
+        console.log(markerCoords)
+      });
     } catch (error) {
         console.log("Error: " + error)
     }
@@ -80,6 +83,23 @@ const HomeScreen = ({ navigation }) => {
 
     fetchCurrentData();
   }, []);
+
+  useEffect(() => {
+    const fetchUpdatedData = async () => {
+      try{
+        const querySnapshot = await getDocs(collection(db, "reports"));
+        onSnapshot(querySnapshot, (snapshot) => {
+          snapshot.forEach((doc) => {
+            setMarkerCoords(markerCoords.push([doc.data().latlng.latitude, doc.data().latlng.longitude]))
+          })
+        })
+      } catch (error) {
+        console.log("Error: " + error)
+      }
+    }
+
+    return () => fetchUpdatedData();
+  }, [db])
 
   useEffect(() => {
     if (crimeWtd.length > 0) {
@@ -109,7 +129,6 @@ const HomeScreen = ({ navigation }) => {
       }
     }
   }, [selectedTime]);
-
   const initialRegion = {
     latitude: 40.7194,
     longitude: -73.9232,
