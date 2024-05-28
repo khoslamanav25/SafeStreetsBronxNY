@@ -10,6 +10,9 @@ import { getFirestore } from "firebase/firestore";
 import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage'
 
 
+import * as Location from 'expo-location';
+import Toast from 'react-native-simple-toast';
+
 import defaultImage from '../assets/placeholder.png'; // Adjust the path to your default image
 
 
@@ -39,6 +42,14 @@ const ReportScreen = ({ navigation }) => {
       }
   };
 
+  const test = async() => {
+    
+    console.log(status)
+    let location = await Location.getCurrentPositionAsync({});
+    console.log(location)
+  }
+
+
   const uploadReport = async () => {
 
     //CONVERTING IMAGE TO BLOB FOR FIREBASE STORAGE
@@ -46,6 +57,17 @@ const ReportScreen = ({ navigation }) => {
     const image_blob = await image_response.blob();
 
     try {
+
+        //GETTING THE LATLNG
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            Toast.show('Location Permissions Denied');
+            return;
+        }
+        let location = await Location.getCurrentPositionAsync({});
+        const latitude = location.latitude
+        const longitude = location.longitude
+
 
         //WRITING IMAGE TO FIREBASE STORAGE (NOT FIRESTORE) WITH IDENTIFIER
 
@@ -71,13 +93,14 @@ const ReportScreen = ({ navigation }) => {
             })
         } //On Completion
         )  
-
+        
         //WRITING TO FIRESTORE
         const report = {
             image: firebasefileLocation,
             location: location,
             description: description,
             user: FIREBASE_AUTH.currentUser.uid,
+            latlng: {latitude, longitude},
             time: new Date()
         }
 
@@ -133,14 +156,11 @@ const ReportScreen = ({ navigation }) => {
           </View>
 
           
-          <TouchableOpacity style={styles.uploadReport} onPress={uploadReport}>
+          <TouchableOpacity style={styles.uploadReport} onPress={test}>
             <Text style={styles.uploadReportText}>Upload Report</Text>
           </TouchableOpacity>
 
-          
-
-
-
+        
         </View>
       </View>
       </ScrollView>

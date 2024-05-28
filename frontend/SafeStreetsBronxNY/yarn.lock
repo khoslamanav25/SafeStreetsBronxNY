@@ -4058,6 +4058,11 @@ expo-keep-awake@~13.0.2:
   resolved "https://registry.npmjs.org/expo-keep-awake/-/expo-keep-awake-13.0.2.tgz"
   integrity sha512-kKiwkVg/bY0AJ5q1Pxnm/GvpeB6hbNJhcFsoOWDh2NlpibhCLaHL826KHUM+WsnJRbVRxJ+K9vbPRHEMvFpVyw==
 
+expo-location@~17.0.1:
+  version "17.0.1"
+  resolved "https://registry.npmjs.org/expo-location/-/expo-location-17.0.1.tgz"
+  integrity sha512-m+OzotzlAXO3ZZ1uqW5GC25nXW868zN+ROyBA1V4VF6jGay1ZEs4URPglCVUDzZby2F5wt24cMzqDKw2IX6nRw==
+
 expo-modules-autolinking@>=0.8.1, expo-modules-autolinking@1.11.1:
   version "1.11.1"
   resolved "https://registry.npmjs.org/expo-modules-autolinking/-/expo-modules-autolinking-1.11.1.tgz"
@@ -6658,6 +6663,11 @@ react-native-screens@^3.31.1, "react-native-screens@>= 3.0.0":
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
 
+react-native-simple-toast@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.npmjs.org/react-native-simple-toast/-/react-native-simple-toast-3.3.1.tgz"
+  integrity sha512-5SbAvZpzjSHNkMGbO1cr/7kg/oHZEVZbgeqC+6FtYTtvBbkRMbEaUIfiD1rvghbxZrJB783Y/mHRDUab2ogTqA==
+
 react-native-size-matters@^0.3.1:
   version "0.3.1"
   resolved "https://registry.npmjs.org/react-native-size-matters/-/react-native-size-matters-0.3.1.tgz"
@@ -6687,7 +6697,7 @@ react-native-web@*, react-native-web@0.9.x:
     prop-types "^15.6.0"
     react-timer-mixin "^0.13.4"
 
-react-native@*, react-native@0.74.1:
+react-native@*, react-native@>=0.71.0, react-native@0.74.1:
   version "0.74.1"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.74.1.tgz"
   integrity sha512-0H2XpmghwOtfPpM2LKqHIN7gxy+7G/r1hwJHKLV6uoyXGC/gCojRtoo5NqyKrWpFC8cqyT6wTYCLuG7CxEKilg==
