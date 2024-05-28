@@ -1,20 +1,30 @@
 import React, {useState} from "react";
-import { StyleSheet, View, Image, TouchableOpacity, Text, TextInput } from "react-native";
-import { MenuProvider } from "react-native-popup-menu";
-import {
-  Menu,
-  MenuOption,
-  MenuOptions,
-  MenuTrigger,
-} from "react-native-popup-menu";
-import { FIREBASE_AUTH } from "../FirebaseConfig";
-import { Icon } from "react-native-elements";
+import { StyleSheet, View, Image, TouchableOpacity, Text, TextInput, ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
+
+import { FIREBASE_AUTH, FIREBASE_STORAGE, FIRESTORE_DB } from "../FirebaseConfig";
+import { doc, setDoc, onSnapshot } from "firebase/firestore"; 
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+
+import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage'
+
+
+import * as Location from 'expo-location';
+import Toast from 'react-native-simple-toast';
+
+import defaultImage from '../assets/placeholder.png'; // Adjust the path to your default image
+
 
 
 const ReportScreen = ({ navigation }) => {
+  
+  const db = FIRESTORE_DB;
+  const storage = FIREBASE_STORAGE
 
   const [image, setImage] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [description, setDescription] = useState(null);
 
   const selectImage = async () => {
 
@@ -25,19 +35,88 @@ const ReportScreen = ({ navigation }) => {
         quality: 1,
       });
 
-    console.log(result)
+  
     console.log(result.assets[0].uri)
     if (!result.canceled) {
         setImage(result.assets[0].uri);
       }
-
-
   };
+
+  const test = async() => {
+    
+    console.log(status)
+    let location = await Location.getCurrentPositionAsync({});
+    console.log(location)
+  }
+
+
+  const uploadReport = async () => {
+
+    //CONVERTING IMAGE TO BLOB FOR FIREBASE STORAGE
+    const image_response = await fetch(image);
+    const image_blob = await image_response.blob();
+
+    try {
+
+        //GETTING THE LATLNG
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            Toast.show('Location Permissions Denied');
+            return;
+        }
+        let location = await Location.getCurrentPositionAsync({});
+        const latitude = location.latitude
+        const longitude = location.longitude
+
+
+        //WRITING IMAGE TO FIREBASE STORAGE (NOT FIRESTORE) WITH IDENTIFIER
+
+        const firebasefileLocation = "reportImages/" + FIREBASE_AUTH.currentUser.uid + "/" + new Date()
+        console.log(firebasefileLocation)
+        const storageRef = ref(storage, firebasefileLocation);
+
+        const uploadTask = uploadBytesResumable(storageRef, image_blob);
+
+        uploadTask.on("state_changed", (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes)
+            //console.log("Progress of image upload: " + progress * 100 + "%")
+        }, 
+        (error) => {
+            console.log(error)
+        }, //On Error
+        () => {
+            getDownloadURL(uploadTask.snapshot.ref).then(async(getDownloadURL) => {
+              setImage("")
+              setLocation("")
+              setDescription("")
+              navigation.navigate('Map')
+            })
+        } //On Completion
+        )  
+        
+        //WRITING TO FIRESTORE
+        const report = {
+            image: firebasefileLocation,
+            location: location,
+            description: description,
+            user: FIREBASE_AUTH.currentUser.uid,
+            latlng: {latitude, longitude},
+            time: new Date()
+        }
+
+        res = await setDoc(doc(db, "reports", Date()), report);
+        console.log("Succesfully Wrote Report To Firebase")
+      
+
+      } catch (error) {
+        console.error('Error writing document:', error);
+      }
+  }
 
 
   return (
     <View style={styles.safeArea}>
-
+      <ScrollView>
       <View style={styles.container}>
 
       <View style={styles.header}>
@@ -53,29 +132,38 @@ const ReportScreen = ({ navigation }) => {
               style={styles.input}
               placeholder="Enter location / address"
               placeholderTextColor="#16247d"
+              onChangeText={setLocation}
             />
           </View>
           <View style={styles.inputContainer}>
             <Text style={styles.inputHeader}>Description</Text>
             <TextInput
               style={[styles.input, styles.descriptionInput]}
-              placeholder="Enter description"
+              placeholder="Enter description - Or... Generate automatically "
               placeholderTextColor="#16247d"
               multiline={true}
               numberOfLines={4}
+              onChangeText={setDescription}
             />
           </View>
-          <TouchableOpacity style={styles.uploadButton} onPress={selectImage}>
-            <Text style={styles.uploadButtonText}>Upload Photo</Text>
-         
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputHeader}>Upload Image</Text>
+            <TouchableOpacity style={styles.uploadButton} onPress={selectImage}>
+            {<Image source={image ? { uri: image } : defaultImage} style={styles.image}/>}
           </TouchableOpacity>
 
-          <View style={styles.imageContainer}>
-            {image && <Image source={{ uri: image }} style={styles.image} />}
           </View>
+
+          
+          <TouchableOpacity style={styles.uploadReport} onPress={test}>
+            <Text style={styles.uploadReportText}>Upload Report</Text>
+          </TouchableOpacity>
+
         
         </View>
       </View>
+      </ScrollView>
     </View>
   );
 };
@@ -124,7 +212,7 @@ const styles = StyleSheet.create({
     height: 120,
   },
   uploadButton: {
-    backgroundColor: "#16247d",
+    backgroundColor: "#fff",
     borderRadius: 5,
     padding: 15,
     alignItems: "center",
@@ -150,6 +238,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccc", // Light grey color for the separator
     width: "100%",
     marginBottom: 20,
+  },
+  uploadReport: {
+    backgroundColor: "blue",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "black",
+  },
+  uploadReportText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 
