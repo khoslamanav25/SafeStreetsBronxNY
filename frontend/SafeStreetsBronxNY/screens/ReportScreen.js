@@ -11,7 +11,6 @@ import {ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage'
 
 
 import * as Location from 'expo-location';
-import Toast from 'react-native-simple-toast';
 
 import defaultImage from '../assets/placeholder.png'; // Adjust the path to your default image
 
@@ -42,14 +41,11 @@ const ReportScreen = ({ navigation }) => {
       }
   };
 
-  const test = async() => {
-    
-    console.log(status)
-    let location = await Location.getCurrentPositionAsync({});
-    console.log(location)
-  }
+  const test = async () => {
 
+  } 
 
+  
   const uploadReport = async () => {
 
     //CONVERTING IMAGE TO BLOB FOR FIREBASE STORAGE
@@ -61,7 +57,7 @@ const ReportScreen = ({ navigation }) => {
         //GETTING THE LATLNG
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-            Toast.show('Location Permissions Denied');
+            navigation.navigate('Map')
             return;
         }
         let location = await Location.getCurrentPositionAsync({});
