@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { MenuProvider } from "react-native-popup-menu";
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from "react-native-popup-menu";
-import { FIREBASE_AUTH } from "../FirebaseConfig";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Icon } from "react-native-elements";
-import MapView, { Heatmap } from 'react-native-maps';
+import MapView, { Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
 import Papa from 'papaparse';
 import { Picker } from '@react-native-picker/picker'
+
+import { doc, getDoc, onSnapshot} from 'firebase/firestore'
 
 const HomeScreen = ({ navigation }) => {
   const [crimeWtd, setCrimeWtd] = useState([]);
@@ -15,6 +17,11 @@ const HomeScreen = ({ navigation }) => {
   const [selectedTime, setSelectedTime] = useState([]);
   const [selectedWeights, setSelectedWeights] = useState([]);
   const [heatMapRadius, setHeatMapRadius] = useState(25)
+
+  const [markerCoords, setMarkerCoords] = useState([])
+
+  const db = FIRESTORE_DB;
+  const auth = FIREBASE_AUTH;
 
   const handleSignOut = async () => {
     try {
@@ -57,10 +64,21 @@ const HomeScreen = ({ navigation }) => {
     });
   };
 
+  const fetchCurrentData = async () => {
+    try{
+        const initialData = await db.collection("reports").get()
+        console.log(initialData)
+    } catch (error) {
+        console.log("Error: " + error)
+    }
+  }
+
   useEffect(() => {
     parseCrimeString(crime_wtd, setCrimeWtd);
     parseCrimeString(crime_28d, setCrime28d);
     parseCrimeString(crime_ytd, setCrimeYtd);
+
+    fetchCurrentData();
   }, []);
 
   useEffect(() => {
@@ -83,7 +101,7 @@ const HomeScreen = ({ navigation }) => {
       setSelectedWeights(weights);
 
       if(selectedTime == crimeWtd){
-        setHeatMapRadius(total / 30)
+        setHeatMapRadius(25)
       } else if(selectedTime == crime28d){
         setHeatMapRadius(50)
       } else {
@@ -156,7 +174,6 @@ const HomeScreen = ({ navigation }) => {
             initialRegion={initialRegion}
           >
             <Heatmap
-            opacity={0.3}
               points={points}
               radius={heatMapRadius}
             />

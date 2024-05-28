@@ -2,9 +2,9 @@
   "name": "safestreetsbronxny",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start --dev-client",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
     "web": "expo start --web"
   },
   "dependencies": {
@@ -14,18 +14,13 @@
     "@react-navigation/native-stack": "^6.9.26",
     "csv-string": "^4.1.1",
     "expo": "~51.0.8",
-<<<<<<< HEAD
     "expo-asset": "^10.0.6",
     "expo-file-system": "^17.0.1",
     "expo-image-picker": "~15.0.5",
     "expo-location": "^17.0.1",
-=======
-    "expo-av": "~14.0.5",
-    "expo-image-picker": "~15.0.5",
-    "expo-location": "~17.0.1",
->>>>>>> 178bfc85b8040d8c730f3da11095b450bdbc7008
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.12.1",
+    "metro-core": "^0.80.9",
     "papaparse": "^5.4.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -41,12 +36,9 @@
     "react-native-safe-area-context": "^4.10.1",
     "react-native-safe-area-view": "^1.1.1",
     "react-native-screens": "^3.31.1",
-<<<<<<< HEAD
+    "react-native-simple-toast": "^3.3.1",
     "react-native-web": "~0.19.10",
     "react-native-webview": "^13.10.2"
-=======
-    "react-native-simple-toast": "^3.3.1"
->>>>>>> 178bfc85b8040d8c730f3da11095b450bdbc7008
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
