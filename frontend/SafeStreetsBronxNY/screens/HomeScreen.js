@@ -78,7 +78,7 @@ const HomeScreen = ({ navigation }) => {
     parseCrimeString(crime_28d, setCrime28d);
     parseCrimeString(crime_ytd, setCrimeYtd);
 
-    fetchCurrentData();
+    //fetchCurrentData();
   }, []);
 
   useEffect(() => {

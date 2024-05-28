@@ -51,7 +51,7 @@ const ReportScreen = ({ navigation }) => {
     //CONVERTING IMAGE TO BLOB FOR FIREBASE STORAGE
     const image_response = await fetch(image);
     const image_blob = await image_response.blob();
-
+  
     try {
 
         //GETTING THE LATLNG
@@ -61,10 +61,10 @@ const ReportScreen = ({ navigation }) => {
             return;
         }
         let location = await Location.getCurrentPositionAsync({});
-        const latitude = location.latitude
-        const longitude = location.longitude
 
-
+        const latitude = location.coords.latitude
+        const longitude = location.coords.longitude
+       
         //WRITING IMAGE TO FIREBASE STORAGE (NOT FIRESTORE) WITH IDENTIFIER
 
         const firebasefileLocation = "reportImages/" + FIREBASE_AUTH.currentUser.uid + "/" + new Date()
@@ -112,7 +112,7 @@ const ReportScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safeArea}>
-      <ScrollView>
+      <ScrollView style={styles.scroll}>
       <View style={styles.container}>
 
       <View style={styles.header}>
@@ -152,7 +152,7 @@ const ReportScreen = ({ navigation }) => {
           </View>
 
           
-          <TouchableOpacity style={styles.uploadReport} onPress={test}>
+          <TouchableOpacity style={styles.uploadReport} onPress={uploadReport}>
             <Text style={styles.uploadReportText}>Upload Report</Text>
           </TouchableOpacity>
 
@@ -169,6 +169,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingTop: 16,
+  },
+  scroll: {
+    backgroundColor: "fff",
+    flexGrow: 1,
+    height: 1000
   },
   container: {
     flex: 1,
@@ -205,7 +210,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   descriptionInput: {
-    height: 120,
+    height: 60,
   },
   uploadButton: {
     backgroundColor: "#fff",
@@ -219,8 +224,8 @@ const styles = StyleSheet.create({
   },
   image: {
     borderRadius: 3,
-    height: 250,
-    width: 250,
+    height: 200,
+    width: 200,
     borderWidth: 3,
   },
   imageContainer: {
