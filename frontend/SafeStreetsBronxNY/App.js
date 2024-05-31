@@ -15,6 +15,7 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import ReportScreen from './screens/ReportScreen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 const Stack = createNativeStackNavigator();
@@ -136,6 +137,7 @@ export default function App() {
   }, []);
 
   return (
+    <GestureHandlerRootView>
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         {user ? (
@@ -150,6 +152,7 @@ export default function App() {
         )}
       </Stack.Navigator>
     </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 

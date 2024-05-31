@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View,
   Text,
+  Image
 } from "react-native";
 import React, { useState } from "react";
 import { TextInput } from "react-native-paper";
@@ -35,6 +36,9 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={[styles.logoContainer, {marginBottom: 0}]}>
+        <Image style={styles.logo} source={require('../assets/logo.png')}/>
+      </View>
       <View style={styles.logoContainer}>
         <Text style={styles.loginText}>Login</Text>
       </View>
@@ -94,8 +98,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 300,
+    height: 300,
     resizeMode: "contain",
   },
   loginText: {

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { SafeAreaView, StyleSheet, View, Dimensions, Text } from "react-native";
 import { MenuProvider } from "react-native-popup-menu";
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from "react-native-popup-menu";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
@@ -7,8 +7,11 @@ import { Icon } from "react-native-elements";
 import MapView, { Heatmap, Marker } from 'react-native-maps';
 import Papa from 'papaparse';
 import { Picker } from '@react-native-picker/picker';
-
+import Carousel from "react-native-reanimated-carousel";
+import { useSharedValue } from "react-native-reanimated";
 import { collection, onSnapshot } from 'firebase/firestore';
+
+const { width } = Dimensions.get("window");
 
 const HomeScreen = ({ navigation }) => {
   const [crimeWtd, setCrimeWtd] = useState([]);
@@ -17,8 +20,9 @@ const HomeScreen = ({ navigation }) => {
   const [selectedTime, setSelectedTime] = useState([]);
   const [selectedWeights, setSelectedWeights] = useState([]);
   const [heatMapRadius, setHeatMapRadius] = useState(25);
-
   const [markerCoords, setMarkerCoords] = useState([]);
+  const progress = useSharedValue(0);
+  const ref = useRef(null);
 
   const db = FIRESTORE_DB;
   const auth = FIREBASE_AUTH;
@@ -142,6 +146,15 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const renderItem = ({ index, animationValue }) => {
+    const translateX = animationValue.value * width;
+    return (
+      <View style={[styles.carouselItem, { transform: [{ translateX }] }]}>
+        <Text style={styles.carouselText}>{index}</Text>
+      </View>
+    );
+  };
+
   return (
     <MenuProvider>
       <SafeAreaView style={styles.container}>
@@ -185,6 +198,20 @@ const HomeScreen = ({ navigation }) => {
             ))}
           </MapView>
         </View>
+        <View style={styles.carouselContainer}>
+        <Carousel
+        ref={ref}
+        width={width}
+        height={width / 2}
+        data={markerCoords}
+        onProgressChange={(_, absoluteProgress) => (progress.value = absoluteProgress)}
+        renderItem={({ item }) => (
+          <View style={styles.itemContainer}>
+            <Text style={styles.itemText}>{`Lat: ${item[0]}, Lon: ${item[1]}`}</Text>
+          </View>
+        )}
+      />
+        </View>
       </SafeAreaView>
     </MenuProvider>
   );
@@ -213,13 +240,27 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
-  footer: {
-    padding: 16,
-    backgroundColor: '#fff', // Add background color to footer
-  },
   picker: {
     height: 50,
     width: 150,
+  },
+  carouselContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#fff',
+  },
+  carouselItem: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+  },
+  carouselText: {
+    fontSize: 30,
+    textAlign: "center",
   },
 });
 
