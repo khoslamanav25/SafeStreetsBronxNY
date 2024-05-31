@@ -4,3 +4,10 @@ node_modules/
 .vscode/
 .DS_Store
 .env
+
+
+/venv/
+__pycache__/
+model/
+training/
+flickr8k/

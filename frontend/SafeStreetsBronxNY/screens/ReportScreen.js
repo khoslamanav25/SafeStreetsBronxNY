@@ -42,6 +42,36 @@ const ReportScreen = ({ navigation }) => {
   };
 
   const test = async () => {
+    const image_response = await fetch(image);
+    const image_blob = await image_response.blob();
+
+    const reader = new FileReader();
+    reader.readAsDataURL(image_blob);
+    reader.onloadend = async () => {
+      
+      const unfilteredBase64data = reader.result.toString();
+      const base64data = unfilteredBase64data.split(';base64,').pop();
+      console.log(base64data);
+      
+      const formData = new FormData();
+      formData.append('image', base64data);
+
+      const response = await fetch('http://10.0.2.2:5000/process_image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData
+      });
+
+      console.log(await response.json())
+      console.log("SDFS")
+  
+    };
+
+  
+  
+   
 
   } 
 
@@ -152,7 +182,7 @@ const ReportScreen = ({ navigation }) => {
           </View>
 
           
-          <TouchableOpacity style={styles.uploadReport} onPress={uploadReport}>
+          <TouchableOpacity style={styles.uploadReport} onPress={test}>
             <Text style={styles.uploadReportText}>Upload Report</Text>
           </TouchableOpacity>
 
