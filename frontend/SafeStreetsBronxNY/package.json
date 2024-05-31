@@ -12,6 +12,7 @@
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
+    "axios": "^1.7.2",
     "csv-string": "^4.1.1",
     "expo": "~51.0.8",
     "expo-asset": "^10.0.6",
