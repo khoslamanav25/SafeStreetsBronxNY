@@ -41,7 +41,7 @@ const ReportScreen = ({ navigation }) => {
       }
   };
 
-  const test = async () => {
+  const generateText = async () => {
     const image_response = await fetch(image);
     const image_blob = await image_response.blob();
 
@@ -64,15 +64,15 @@ const ReportScreen = ({ navigation }) => {
         body: formData
       });
 
-      console.log(await response.json())
-      console.log("SDFS")
+      const data = await response.json();
+      const { caption } = data;
+      
+      setDescription(caption)
   
     };
 
-  
-  
-   
 
+    setDescription(caption)
   } 
 
   
@@ -170,19 +170,25 @@ const ReportScreen = ({ navigation }) => {
               multiline={true}
               numberOfLines={4}
               onChangeText={setDescription}
+              value={description}
             />
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.inputHeader}>Upload Image</Text>
-            <TouchableOpacity style={styles.uploadButton} onPress={selectImage}>
-            {<Image source={image ? { uri: image } : defaultImage} style={styles.image}/>}
-          </TouchableOpacity>
-
+            <View style={styles.buttonRow}>
+              <TouchableOpacity style={styles.uploadButton} onPress={selectImage}>
+                {<Image source={image ? { uri: image } : defaultImage} style={styles.image}/>}
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.smallButton} onPress={generateText}>
+                <Text style={styles.smallButtonText}> Generate Description Automatically</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           
-          <TouchableOpacity style={styles.uploadReport} onPress={test}>
+          <TouchableOpacity style={styles.uploadReport} onPress={uploadReport}>
             <Text style={styles.uploadReportText}>Upload Report</Text>
           </TouchableOpacity>
 
@@ -201,9 +207,9 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   scroll: {
-    backgroundColor: "fff",
+    backgroundColor: "#fff",
     flexGrow: 1,
-    height: 1000
+    height: 1000,
   },
   container: {
     flex: 1,
@@ -242,6 +248,30 @@ const styles = StyleSheet.create({
   descriptionInput: {
     height: 60,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignSelf: 'baseline'
+  },
+  smallButton: {
+    backgroundColor: 'gray',
+    padding: 10,
+    marginRight: 10,
+    borderRadius: 5,
+    width: 120,
+    height: 85,
+    maxWidth: '80%',
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  smallButtonText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center'
+  },
   uploadButton: {
     backgroundColor: "#fff",
     borderRadius: 5,
@@ -262,7 +292,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 100
+    paddingBottom: 100,
   },
   separator: {
     height: 1,
