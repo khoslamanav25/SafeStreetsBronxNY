@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import { SafeAreaView, StyleSheet, View } from "react-native";
 import { MenuProvider } from "react-native-popup-menu";
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from "react-native-popup-menu";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Icon } from "react-native-elements";
-import MapView, { Heatmap, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Heatmap, Marker } from 'react-native-maps';
 import Papa from 'papaparse';
-import { Picker } from '@react-native-picker/picker'
+import { Picker } from '@react-native-picker/picker';
 
-import { doc, getDoc, onSnapshot} from 'firebase/firestore'
+import { collection, onSnapshot } from 'firebase/firestore';
 
 const HomeScreen = ({ navigation }) => {
   const [crimeWtd, setCrimeWtd] = useState([]);
@@ -16,9 +16,9 @@ const HomeScreen = ({ navigation }) => {
   const [crimeYtd, setCrimeYtd] = useState([]);
   const [selectedTime, setSelectedTime] = useState([]);
   const [selectedWeights, setSelectedWeights] = useState([]);
-  const [heatMapRadius, setHeatMapRadius] = useState(25)
+  const [heatMapRadius, setHeatMapRadius] = useState(25);
 
-  const [markerCoords, setMarkerCoords] = useState([])
+  const [markerCoords, setMarkerCoords] = useState([]);
 
   const db = FIRESTORE_DB;
   const auth = FIREBASE_AUTH;
@@ -64,21 +64,21 @@ const HomeScreen = ({ navigation }) => {
     });
   };
 
-  const fetchCurrentData = async () => {
-    try{
-        const initialData = await db.collection("reports").get()
-        console.log(initialData)
-    } catch (error) {
-        console.log("Error: " + error)
-    }
-  }
-
   useEffect(() => {
     parseCrimeString(crime_wtd, setCrimeWtd);
     parseCrimeString(crime_28d, setCrime28d);
     parseCrimeString(crime_ytd, setCrimeYtd);
 
-    //fetchCurrentData();
+    const unsubscribe = onSnapshot(collection(db, "reports"), (snapshot) => {
+      const newCoords = [];
+      snapshot.forEach((doc) => {
+        newCoords.push([doc.data().latlng.latitude, doc.data().latlng.longitude]);
+      });
+      setMarkerCoords(newCoords);
+      console.log("Updated markerCoords:", newCoords); // Logging the updated coordinates
+    });
+
+    return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
 
   useEffect(() => {
@@ -100,12 +100,12 @@ const HomeScreen = ({ navigation }) => {
       }
       setSelectedWeights(weights);
 
-      if(selectedTime == crimeWtd){
-        setHeatMapRadius(25)
-      } else if(selectedTime == crime28d){
-        setHeatMapRadius(50)
+      if (selectedTime === crimeWtd) {
+        setHeatMapRadius(25);
+      } else if (selectedTime === crime28d) {
+        setHeatMapRadius(50);
       } else {
-        setHeatMapRadius(100)
+        setHeatMapRadius(100);
       }
     }
   }, [selectedTime]);
@@ -177,6 +177,12 @@ const HomeScreen = ({ navigation }) => {
               points={points}
               radius={heatMapRadius}
             />
+            {markerCoords.map((coord, index) => (
+              <Marker
+                key={index}
+                coordinate={{ latitude: coord[0], longitude: coord[1] }}
+              />
+            ))}
           </MapView>
         </View>
       </SafeAreaView>
