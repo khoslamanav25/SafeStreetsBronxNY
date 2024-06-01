@@ -22,7 +22,7 @@ const ReportScreen = ({ navigation }) => {
   const storage = FIREBASE_STORAGE
 
   const [image, setImage] = useState(null);
-  const [location, setLocation] = useState(null);
+  const [address, setAddress] = useState(null);
   const [description, setDescription] = useState(null);
 
   const selectImage = async () => {
@@ -113,7 +113,7 @@ const ReportScreen = ({ navigation }) => {
         () => {
             getDownloadURL(uploadTask.snapshot.ref).then(async(getDownloadURL) => {
               setImage("")
-              setLocation("")
+              setAddress("")
               setDescription("")
               navigation.navigate('Map')
             })
@@ -123,7 +123,7 @@ const ReportScreen = ({ navigation }) => {
         //WRITING TO FIRESTORE
         const report = {
             image: firebasefileLocation,
-            location: location,
+            location: address,
             description: description,
             user: FIREBASE_AUTH.currentUser.uid,
             latlng: {latitude, longitude},
@@ -158,7 +158,7 @@ const ReportScreen = ({ navigation }) => {
               style={styles.input}
               placeholder="Enter location / address"
               placeholderTextColor="#16247d"
-              onChangeText={setLocation}
+              onChangeText={setAddress}
             />
           </View>
           <View style={styles.inputContainer}>
