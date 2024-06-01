@@ -14,7 +14,7 @@ import * as Location from 'expo-location';
 
 import defaultImage from '../assets/placeholder.png'; // Adjust the path to your default image
 
-
+import {testPoints} from '../TestPoints'
 
 const ReportScreen = ({ navigation }) => {
   
@@ -22,7 +22,7 @@ const ReportScreen = ({ navigation }) => {
   const storage = FIREBASE_STORAGE
 
   const [image, setImage] = useState(null);
-  const [location, setLocation] = useState(null);
+  const [address, setAddress] = useState(null);
   const [description, setDescription] = useState(null);
 
   const selectImage = async () => {
@@ -123,10 +123,10 @@ const ReportScreen = ({ navigation }) => {
         //WRITING TO FIRESTORE
         const report = {
             image: firebasefileLocation,
-            location: location,
+            address: address,
             description: description,
             user: FIREBASE_AUTH.currentUser.uid,
-            latlng: {latitude, longitude},
+            latlng: testPoints[Math.floor(Math.random() * testPoints.length)],
             time: new Date()
         }
 
@@ -158,7 +158,7 @@ const ReportScreen = ({ navigation }) => {
               style={styles.input}
               placeholder="Enter location / address"
               placeholderTextColor="#16247d"
-              onChangeText={setLocation}
+              onChangeText={setAddress}
             />
           </View>
           <View style={styles.inputContainer}>
