@@ -113,7 +113,7 @@ const ReportScreen = ({ navigation }) => {
         () => {
             getDownloadURL(uploadTask.snapshot.ref).then(async(getDownloadURL) => {
               setImage("")
-              setLocation("")
+              setAddress("")
               setDescription("")
               navigation.navigate('Map')
             })

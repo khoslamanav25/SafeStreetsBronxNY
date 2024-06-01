@@ -16,7 +16,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import HomeScreen from './screens/HomeScreen';
 import ReportScreen from './screens/ReportScreen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
+import NewsScreen from './screens/NewsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -93,7 +93,7 @@ function Tabs( ) {
           />
           <Tab.Screen
            name="News" 
-           component={HomeScreen}
+           component={NewsScreen}
            options={{
             tabBarIcon: ({focused})=>{
               return (
