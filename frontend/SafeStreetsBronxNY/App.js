@@ -17,6 +17,9 @@ import HomeScreen from './screens/HomeScreen';
 import ReportScreen from './screens/ReportScreen';
 import NewsScreen from './screens/NewsScreen';
 
+import useFirestoreListener from './hooks/fireStoreListener';
+
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -36,6 +39,8 @@ const screenOptions = {
 
 
 function Tabs( ) {
+  useFirestoreListener();
+  
   return (
     <Tab.Navigator screenOptions={screenOptions}>
           <Tab.Screen 
@@ -126,6 +131,7 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   const auth = FIREBASE_AUTH;
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
