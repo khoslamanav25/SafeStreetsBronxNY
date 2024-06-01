@@ -13,9 +13,15 @@ import { getDownloadURL, ref } from "firebase/storage";
 import { useSharedValue } from "react-native-reanimated";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
+import * as Location from 'expo-location';
+import personLocationIcon from '../assets/personLocationIcon.png'
+
 const { width } = Dimensions.get("window");
 
 const HomeScreen = ({ navigation }) => {
+
+  const [userLocation, setUserLocation] = useState(null);
+
   const [crimeWtd, setCrimeWtd] = useState([]);
   const [crime28d, setCrime28d] = useState([]);
   const [crimeYtd, setCrimeYtd] = useState([]);
@@ -72,6 +78,10 @@ const HomeScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
+    
+    //MAX ADDED THIS: GETTING USER LOCATION ON RENDER TO DISPLAY
+    getUserLocation().then(location => setUserLocation(location));
+    
     parseCrimeString(crime_wtd, setCrimeWtd);
     parseCrimeString(crime_28d, setCrime28d);
     parseCrimeString(crime_ytd, setCrimeYtd);
@@ -187,6 +197,29 @@ const HomeScreen = ({ navigation }) => {
     carouselRef.current?.scrollTo({ index, animated: true });
   };
 
+
+  const getUserLocation = async () => {
+    try {
+      //GETTING THE LATLNG
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      console.log(status)
+      if (status !== 'granted') {
+          console.log("Permission Not Granted")
+          return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+
+      const latitude = location.coords.latitude
+      const longitude = location.coords.longitude
+   
+      return {"latitude": latitude, "longitude": longitude}
+    } catch (error) {
+      console.error('Error writing document:', error);
+    }
+  }
+  
+
+
   return (
     <MenuProvider>
       <SafeAreaView style={styles.container}>
@@ -219,6 +252,20 @@ const HomeScreen = ({ navigation }) => {
             initialRegion={initialRegion}
           >
             <Heatmap points={points} radius={heatMapRadius} />
+
+            {userLocation && (
+              <Marker
+                coordinate={{ latitude:  40.6683, longitude: -73.92 }}
+                title="Your Location"
+              // Change the color of the marker if needed
+              >
+                <Image 
+                    source={personLocationIcon}
+                    style={{ width: 42, height: 42 }} // Adjust the width and height as needed
+                  />
+              </Marker>
+              )}
+
             {newEvent.map((event, index) => (
               <Marker
                 key={`${event.id}-${currentSlideIndex}`} // Use a combination of unique id and currentSlideIndex as the key
@@ -228,7 +275,11 @@ const HomeScreen = ({ navigation }) => {
               >
                 <Callout>
                   {event.imageUrl ? (
-                    <Image source={{ uri: event.imageUrl }} style={styles.calloutImage} />
+                    <>
+                     <Image source={{ uri: event.imageUrl }} style={styles.calloutImage} />
+                     <Text> SDFSDFHSDFHS KDJFHKS H</Text>
+                    </>
+                   
                   ) : (
                     <ActivityIndicator size="small" color="#0000ff" />
                   )}
