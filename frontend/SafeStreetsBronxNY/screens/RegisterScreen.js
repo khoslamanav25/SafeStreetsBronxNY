@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Image
 } from "react-native";
 import React, { useState } from "react";
 import PhoneInput from "react-native-phone-number-input";
@@ -65,6 +66,9 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={[styles.logoContainer, {marginBottom: 0}]}>
+        <Image style={styles.logo} source={require('../assets/logo.png')}/>
+      </View>
       <View style={styles.logoContainer}>
         <Text style={styles.registerText}>Register</Text>
       </View>
@@ -151,6 +155,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
+  },
+  logo: {
+    width: 300,
+    height: 300,
+    resizeMode: "contain",
   },
   registerText: {
     fontSize: 28,

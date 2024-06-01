@@ -14,7 +14,7 @@ import * as Location from 'expo-location';
 
 import defaultImage from '../assets/placeholder.png'; // Adjust the path to your default image
 
-
+import {testPoints} from '../TestPoints'
 
 const ReportScreen = ({ navigation }) => {
   
@@ -123,10 +123,10 @@ const ReportScreen = ({ navigation }) => {
         //WRITING TO FIRESTORE
         const report = {
             image: firebasefileLocation,
-            location: address,
+            address: address,
             description: description,
             user: FIREBASE_AUTH.currentUser.uid,
-            latlng: {latitude, longitude},
+            latlng: testPoints[Math.floor(Math.random() * testPoints.length)],
             time: new Date()
         }
 

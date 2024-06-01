@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { SafeAreaView, StyleSheet, View, Dimensions, Text, Image, ActivityIndicator } from "react-native";
 import { MenuProvider } from "react-native-popup-menu";
 import { Menu, MenuOption, MenuOptions, MenuTrigger } from "react-native-popup-menu";
-import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
+import { FIREBASE_AUTH, FIREBASE_STORAGE, FIRESTORE_DB } from "../FirebaseConfig";
 import { Icon } from "react-native-elements";
-import MapView, { Heatmap, Marker } from 'react-native-maps';
+import MapView, { Heatmap, Marker, Callout } from 'react-native-maps';
 import Papa from 'papaparse';
 import { Picker } from '@react-native-picker/picker';
-
+import Carousel from "react-native-reanimated-carousel";
 import { collection, onSnapshot } from 'firebase/firestore';
+import { getDownloadURL, ref } from "firebase/storage";
+import { useSharedValue } from "react-native-reanimated";
+import { TouchableOpacity } from "react-native-gesture-handler";
+
+const { width } = Dimensions.get("window");
 
 const HomeScreen = ({ navigation }) => {
   const [crimeWtd, setCrimeWtd] = useState([]);
@@ -17,11 +22,13 @@ const HomeScreen = ({ navigation }) => {
   const [selectedTime, setSelectedTime] = useState([]);
   const [selectedWeights, setSelectedWeights] = useState([]);
   const [heatMapRadius, setHeatMapRadius] = useState(25);
-
-  const [markerCoords, setMarkerCoords] = useState([]);
+  const [newEvent, setEvent] = useState([]);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const progress = useSharedValue(0);
+  const carouselRef = useRef(null);
 
   const db = FIRESTORE_DB;
-  const auth = FIREBASE_AUTH;
+  const storage = FIREBASE_STORAGE;
 
   const handleSignOut = async () => {
     try {
@@ -70,16 +77,49 @@ const HomeScreen = ({ navigation }) => {
     parseCrimeString(crime_ytd, setCrimeYtd);
 
     const unsubscribe = onSnapshot(collection(db, "reports"), (snapshot) => {
-      const newCoords = [];
+      const newEvents = [];
       snapshot.forEach((doc) => {
-        newCoords.push([doc.data().latlng.latitude, doc.data().latlng.longitude]);
+        const data = doc.data();
+        newEvents.push({
+          id: doc.id, // Ensure each event has a unique id
+          coords: [data.latlng.latitude, data.latlng.longitude],
+          address: data.address,
+          time: data.time,
+          description: data.description,
+          imagePath: data.image,
+          imageUrl: '', // Initialize imageUrl as an empty string
+          isLoading: true // Add loading state
+        });
       });
-      setMarkerCoords(newCoords);
-      console.log("Updated markerCoords:", newCoords); // Logging the updated coordinates
+      setEvent(newEvents); // Setting the entire array of newEvents
+      console.log("Updated markerCoords:", newEvents); // Logging the updated coordinates
     });
 
     return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
+
+  const fetchImageUrls = async (events) => {
+    const eventsWithUrls = await Promise.all(events.map(async (event) => {
+      if (event.imagePath) {
+        const imageRef = ref(storage, event.imagePath);
+        try {
+          const url = await getDownloadURL(imageRef);
+          return { ...event, imageUrl: url, isLoading: false }; // Update loading state
+        } catch (error) {
+          console.error('Error fetching image URL:', error);
+          return { ...event, isLoading: false }; // Update loading state even if there's an error
+        }
+      }
+      return { ...event, isLoading: false }; // Update loading state
+    }));
+    setEvent(eventsWithUrls);
+  };
+
+  useEffect(() => {
+    if (newEvent.length > 0) {
+      fetchImageUrls(newEvent);
+    }
+  }, [newEvent]);
 
   useEffect(() => {
     if (crimeWtd.length > 0) {
@@ -142,6 +182,11 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const handleMarkerPress = (index) => {
+    setCurrentSlideIndex(index);
+    carouselRef.current?.scrollTo({ index, animated: true });
+  };
+
   return (
     <MenuProvider>
       <SafeAreaView style={styles.container}>
@@ -173,17 +218,44 @@ const HomeScreen = ({ navigation }) => {
             style={styles.map}
             initialRegion={initialRegion}
           >
-            <Heatmap
-              points={points}
-              radius={heatMapRadius}
-            />
-            {markerCoords.map((coord, index) => (
+            <Heatmap points={points} radius={heatMapRadius} />
+            {newEvent.map((event, index) => (
               <Marker
-                key={index}
-                coordinate={{ latitude: coord[0], longitude: coord[1] }}
-              />
+                key={`${event.id}-${currentSlideIndex}`} // Use a combination of unique id and currentSlideIndex as the key
+                coordinate={{ latitude: event.coords[0], longitude: event.coords[1] }}
+                pinColor={index === currentSlideIndex ? 'red' : 'blue'} // Keep the color consistent
+                onPress={() => handleMarkerPress(index)}
+              >
+                <Callout>
+                  {event.imageUrl ? (
+                    <Image source={{ uri: event.imageUrl }} style={styles.calloutImage} />
+                  ) : (
+                    <ActivityIndicator size="small" color="#0000ff" />
+                  )}
+                  <Text style={styles.itemText}>{`Latitude and Longitude: ${event.imageUrl}`}</Text>
+                </Callout>
+              </Marker>
             ))}
           </MapView>
+        </View>
+        <View style={styles.carouselContainer}>
+          <Carousel
+            ref={carouselRef}
+            width={width}
+            height={width / 2}
+            data={newEvent}
+            onSnapToItem={(index) => {
+              setCurrentSlideIndex(index);
+            }}
+            renderItem={({ item }) => (
+              <View style={styles.itemContainer}>
+                <Text style={styles.itemText}>{`Latitude and Longitude: ${item.coords}`}</Text>
+                <Text style={styles.itemText}>{`Address: ${item.address}`}</Text>
+                <Text style={styles.itemText}>{`Time: ${new Date(item.time.seconds * 1000).toLocaleString()}`}</Text>
+                <Text style={styles.itemText}>{`Description: ${item.description}`}</Text>
+              </View>
+            )}
+          />
         </View>
       </SafeAreaView>
     </MenuProvider>
@@ -213,13 +285,45 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
-  footer: {
-    padding: 16,
-    backgroundColor: '#fff', // Add background color to footer
-  },
   picker: {
     height: 50,
     width: 150,
+  },
+  carouselContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: '100%',
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#fff',
+  },
+  carouselItem: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+  },
+  carouselText: {
+    fontSize: 30,
+    textAlign: "center",
+  },
+  itemContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+  },
+  itemText: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+  image: {
+    width: 300,
+    height: 300,
+    marginBottom: 10,
+  },
+  calloutImage: {
+    width: 100,
+    height: 100,
   },
 });
 
